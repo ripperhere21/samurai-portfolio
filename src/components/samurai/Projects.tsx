@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, memo } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, X } from "lucide-react";
 import { DeflectionGame } from "./DeflectionGame";
@@ -24,10 +24,10 @@ interface ProjectsProps {
   audio: any;
 }
 
-export const Projects = memo(function Projects({ audio }: ProjectsProps) {
+export function Projects({ audio }: ProjectsProps) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const lenis = (window as any).lenisInstance;
     if (selectedProject) {
       if (lenis) lenis.stop();
@@ -88,7 +88,8 @@ export const Projects = memo(function Projects({ audio }: ProjectsProps) {
   ];
 
   return (
-    <section id="projects" className="py-20 md:py-24 px-6 sm:px-12 md:px-20 lg:px-32 border-b border-sumi-gray bg-sumi-black relative">
+    <section id="projects" className="py-24 px-8 md:px-20 lg:px-32 border-b border-sumi-gray bg-sumi-black relative">
+      {/* Decorative vertical texts */}
       <div className="absolute right-6 top-12 hidden lg:flex flex-col space-y-4 opacity-15 select-none font-shippori text-sm tracking-widest text-samurai-gold">
         <span>工</span>
         <span>芸</span>
@@ -97,160 +98,219 @@ export const Projects = memo(function Projects({ audio }: ProjectsProps) {
       </div>
 
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 md:mb-16 gap-4">
+        {/* Section Header */}
+        <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between border-b border-samurai-gold/20 pb-6">
           <div>
-            <span className="font-shippori text-xs text-samurai-gold tracking-widest uppercase block mb-1">
-              作品 // Selected Catalog
-            </span>
-            <h2 className="font-cinzel text-3xl sm:text-4xl md:text-5xl font-bold text-washi-light tracking-wider">
-              MASTERY IN CODE.
+            <span className="font-shippori text-xs md:text-sm tracking-widest text-samurai-gold uppercase block mb-2">// Scroll of Accomplishments</span>
+            <h2 className="font-cinzel text-3xl md:text-5xl font-bold tracking-widest text-washi-light">
+              SELECTED WORKS
             </h2>
           </div>
-          <p className="font-sans text-xs sm:text-sm text-washi-light/60 max-w-sm tracking-wide font-light">
-            A curated index of engineered intelligent systems, real-time graphics, and interactive experiences.
+          <p className="mt-4 md:mt-0 font-sans text-xs md:text-sm text-washi-light/60 tracking-wider font-light max-w-xs md:text-right">
+            Handcrafted creations forged through discipline and engineering principles.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {projectsList.map((project) => (
+        {/* Grid Layout of Wooden Plaques */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {projectsList.map((project, idx) => (
             <motion.div
               key={project.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: project.id * 0.15 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: idx * 0.15 }}
               onClick={() => {
-                audio?.playWoodStrike?.();
+                audio.playSwordSlice();
                 setSelectedProject(project);
               }}
-              onMouseEnter={() => audio?.playWoodStrike?.()}
-              className="group relative bg-[#181716] border border-sumi-gray hover:border-samurai-gold/50 rounded-lg p-6 sm:p-8 flex flex-col justify-between cursor-pointer transition-all duration-500 hover:-translate-y-1.5 shadow-lg hover:shadow-2xl"
+              onMouseEnter={() => audio.playWoodStrike()}
+              className="wood-plaque-bg group relative p-8 flex flex-col justify-between h-96 cursor-pointer transform transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
             >
+              {/* Gold corners */}
+              <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-samurai-gold/40 pointer-events-none" />
+              <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-samurai-gold/40 pointer-events-none" />
+              <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-samurai-gold/40 pointer-events-none" />
+              <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-samurai-gold/40 pointer-events-none" />
+
+              {/* Decorative hanging tassel outline on top */}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-3 flex justify-center opacity-60">
+                <svg viewBox="0 0 20 10" className="w-full h-full text-samurai-gold" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M2 10 Q10 0 18 10" />
+                </svg>
+              </div>
+
+              {/* Plaque Content */}
               <div>
-                <div className="flex items-center justify-between mb-6">
-                  <span className="font-shippori text-3xl text-samurai-gold/40 group-hover:text-samurai-gold transition-colors duration-300">
-                    {project.kanji}
-                  </span>
-                  <span className="font-sans text-[10px] tracking-widest text-samurai-gold uppercase px-2.5 py-1 rounded bg-samurai-gold/10 border border-samurai-gold/20">
-                    {project.category}
-                  </span>
+                {/* Plaque Header: Parchment Tag */}
+                <div className="bg-washi-parchment text-sumi-black px-3 py-1.5 font-shippori font-bold tracking-widest text-xs md:text-sm text-center shadow-md rotate-[-1.5deg] border border-samurai-gold/30 uppercase inline-block mb-6">
+                  {project.category}
                 </div>
 
-                <h3 className="font-cinzel text-xl font-bold tracking-wider text-washi-light group-hover:text-samurai-gold transition-colors duration-300 mb-3">
+                {/* Title */}
+                <h3 className="font-cinzel text-xl md:text-2xl font-bold tracking-widest text-washi-light group-hover:text-samurai-gold transition-colors duration-300">
                   {project.title}
                 </h3>
 
-                <p className="font-sans text-xs text-washi-light/70 leading-relaxed font-light mb-6 line-clamp-3">
+                {/* Subtitle description */}
+                <p className="mt-4 font-sans text-xs md:text-sm text-washi-light/75 leading-relaxed font-light line-clamp-3">
                   {project.description}
                 </p>
               </div>
 
-              <div>
-                <div className="flex flex-wrap gap-1.5 mb-6">
-                  {project.tech.map((t, i) => (
-                    <span key={i} className="text-[9px] font-mono text-washi-light/50 bg-sumi-black/60 px-2 py-0.5 rounded border border-sumi-gray">
-                      {t}
-                    </span>
-                  ))}
+              {/* Plaque Footer: Kanji stamp and Action indicator */}
+              <div className="flex items-end justify-between border-t border-washi-light/10 pt-4 mt-6">
+                {/* Kanji Hanko Stamp (Red ink circle seal) */}
+                <div className="relative w-10 h-10 flex items-center justify-center rounded-full border border-samurai-red/60 text-samurai-red font-shippori text-lg font-bold select-none rotate-[6deg] bg-samurai-red/5">
+                  <span className="relative z-10">{project.kanji}</span>
+                  {/* ink blob/imperfections overlay */}
+                  <div className="absolute inset-0 rounded-full border border-dashed border-samurai-red/30 opacity-70 scale-95" />
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-sumi-gray/60">
-                  <span className="font-sans text-[10px] tracking-wider text-washi-light/40 uppercase">
-                    {project.role}
-                  </span>
-                  <span className="font-cinzel text-xs text-samurai-gold group-hover:translate-x-1 transition-transform duration-300 flex items-center gap-1 font-bold">
-                    Inspect ➔
-                  </span>
-                </div>
+                {/* Interactive ink underline read more */}
+                <span className="font-shippori text-[10px] tracking-widest uppercase text-samurai-gold/80 group-hover:text-samurai-gold-bright transition-colors duration-300 ink-underline pb-0.5">
+                  Unroll Details →
+                </span>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
 
+      {/* Hanging Scroll Detail Modal (Kakemono) */}
       <AnimatePresence>
         {selectedProject && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] bg-sumi-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 md:p-10 select-none overflow-y-auto"
-            onClick={() => setSelectedProject(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              transition={{ duration: 0.3 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-4xl bg-[#161514] border border-samurai-gold/40 rounded-lg p-6 sm:p-10 text-washi-light shadow-2xl my-auto max-h-[90vh] overflow-y-auto"
-            >
-              <button
-                onClick={() => setSelectedProject(null)}
-                className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full border border-washi-light/10 text-washi-light/60 hover:text-samurai-gold hover:border-samurai-gold transition-colors focus-visible:ring-2 focus-visible:ring-samurai-gold cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
-                aria-label="Close modal"
-              >
-                <X size={18} />
-              </button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sumi-black/90 backdrop-blur-md">
+            
+            {/* Modal Closer Background */}
+            <div 
+              className="absolute inset-0 cursor-pointer" 
+              onClick={() => {
+                audio.playKoto(1);
+                setSelectedProject(null);
+              }}
+            />
 
-              <div className="flex items-center gap-3 mb-4">
-                <span className="font-shippori text-4xl text-samurai-gold">
-                  {selectedProject.kanji}
-                </span>
-                <div>
-                  <span className="font-sans text-[10px] tracking-widest text-samurai-gold uppercase block">
-                    {selectedProject.category}
-                  </span>
-                  <h3 className="font-cinzel text-2xl sm:text-3xl font-bold tracking-wider text-washi-light">
-                    {selectedProject.title}
-                  </h3>
-                </div>
+            {/* Hanging Scroll container */}
+            <motion.div
+              initial={{ scaleY: 0, opacity: 0 }}
+              animate={{ scaleY: 1, opacity: 1 }}
+              exit={{ scaleY: 0, opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              style={{ originY: 0 }} // unrolls down
+              className="relative w-full max-w-2xl bg-[#f5efe0] text-[#2c1a11] shadow-[0_25px_50px_rgba(0,0,0,0.8)] border-x-[12px] border-cedar-brown rounded-sm overflow-hidden z-10 font-sans"
+            >
+              {/* Paper Texture Overlay */}
+              <div className="absolute inset-0 pointer-events-none opacity-[0.06] bg-image" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.08' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }} />
+
+              {/* Top Wood Roller rod */}
+              <div className="h-4 bg-[#1e120c] border-b-2 border-samurai-gold/50 flex justify-between px-2 items-center text-[8px] text-samurai-gold/50 tracking-wider">
+                <span>巻</span>
+                <span>KAKEMONO SCROLL</span>
+                <span>軸</span>
               </div>
 
-              <div className="space-y-6 my-6 text-sm text-washi-light/80 leading-relaxed font-sans font-light">
-                <p>{selectedProject.longDescription}</p>
+              {/* Close Button */}
+              <button
+                onClick={() => {
+                  audio.playKoto(1);
+                  setSelectedProject(null);
+                }}
+                onMouseEnter={() => audio.playWoodStrike()}
+                className="absolute top-6 right-6 p-2 rounded-full border border-[#2c1a11]/20 hover:bg-[#2c1a11]/10 text-[#2c1a11] transition-colors z-20"
+              >
+                <X size={16} />
+              </button>
 
-                {selectedProject.id === 2 && (
-                  <div className="my-6">
-                    <DeflectionGame audio={audio} />
-                  </div>
-                )}
+              {/* Scroll Content Area */}
+              <div className="p-8 md:p-12 overflow-y-auto max-h-[75vh] select-text" data-lenis-prevent>
+                
+                {/* Kanji watermarked in background */}
+                <div className="absolute right-8 bottom-8 opacity-[0.04] font-shippori text-9xl pointer-events-none select-none text-samurai-red">
+                  {selectedProject.kanji}
+                </div>
 
-                <div>
-                  <h4 className="font-cinzel text-xs font-bold tracking-widest text-samurai-gold uppercase mb-2">
-                    Engineered Technology Stack
+                {/* Category Header */}
+                <span className="font-shippori text-xs font-semibold tracking-widest text-samurai-red uppercase block mb-2 border-b border-samurai-red/20 pb-1 w-fit">
+                  {selectedProject.category}
+                </span>
+
+                {/* Title */}
+                <h3 className="font-cinzel text-2xl md:text-4xl font-extrabold tracking-widest text-[#1e120c]">
+                  {selectedProject.title}
+                </h3>
+                
+                <span className="font-shippori text-[10px] tracking-wider text-samurai-gold font-bold uppercase mt-1 block">
+                  Role: {selectedProject.role}
+                </span>
+
+                {/* Narrative */}
+                <p className="mt-6 text-sm md:text-base leading-relaxed font-serif font-light text-[#3d2619]">
+                  {selectedProject.longDescription}
+                </p>
+
+                {/* Tech Stack items */}
+                <div className="mt-8">
+                  <h4 className="font-shippori text-xs font-bold tracking-widest text-[#1e120c] uppercase mb-3">
+                    // Tech Arsenal
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedProject.tech.map((t, i) => (
-                      <span key={i} className="text-xs font-mono text-samurai-gold bg-samurai-gold/10 px-3 py-1 rounded border border-samurai-gold/20">
+                      <span
+                        key={i}
+                        className="bg-[#e8dec9] border border-[#2c1a11]/25 px-2.5 py-1 text-xs font-medium tracking-wide text-[#2c1a11] rounded-sm"
+                      >
                         {t}
                       </span>
                     ))}
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between pt-6 border-t border-sumi-gray">
-                <span className="font-sans text-xs tracking-wider text-washi-light/50 uppercase">
-                  Role: {selectedProject.role}
-                </span>
-                <div className="flex items-center gap-3">
+                {/* Links */}
+                <div className="mt-8 pt-6 border-t border-[#2c1a11]/15 flex flex-wrap gap-4">
                   {selectedProject.links.github && (
                     <a
                       href={selectedProject.links.github}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 text-xs tracking-widest uppercase border border-washi-light/20 text-washi-light hover:border-samurai-gold hover:text-samurai-gold transition-colors rounded min-h-[44px] flex items-center gap-2"
+                      onMouseEnter={() => audio.playWoodStrike()}
+                      className="flex items-center gap-2 text-xs uppercase tracking-widest font-bold text-[#1e120c] hover:text-samurai-red transition-colors duration-300"
                     >
-                      GitHub <ExternalLink size={12} />
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" stroke="currentColor" />
+                        <path d="M9 18c-4.51 2-5-2-7-2" stroke="currentColor" />
+                      </svg>
+                      View Codebase
+                    </a>
+                  )}
+                  {selectedProject.links.demo && (
+                    <a
+                      href={selectedProject.links.demo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onMouseEnter={() => audio.playWoodStrike()}
+                      className="flex items-center gap-2 text-xs uppercase tracking-widest font-bold text-[#1e120c] hover:text-samurai-red transition-colors duration-300"
+                    >
+                      <ExternalLink size={14} />
+                      Live Demonstration
                     </a>
                   )}
                 </div>
+
+                {/* Playable Sekiro Deflection Mini-Game Widget */}
+                {selectedProject.id === 2 && (
+                  <DeflectionGame audio={audio} />
+                )}
+              </div>
+
+              {/* Bottom Wood Roller rod */}
+              <div className="h-6 bg-[#1e120c] border-t border-samurai-gold/30 flex justify-center items-center">
+                <div className="w-1/3 h-1 bg-[#bfa15f]/25 rounded-full" />
               </div>
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </section>
   );
-});
+}
