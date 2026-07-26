@@ -1,13 +1,16 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, memo } from "react";
 
 interface AudioVisualizerHUDProps {
   getAnalyser: () => AnalyserNode | null;
   isMuted: boolean;
 }
 
-export function AudioVisualizerHUD({ getAnalyser, isMuted }: AudioVisualizerHUDProps) {
+export const AudioVisualizerHUD = memo(function AudioVisualizerHUD({
+  getAnalyser,
+  isMuted,
+}: AudioVisualizerHUDProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -26,35 +29,42 @@ export function AudioVisualizerHUD({ getAnalyser, isMuted }: AudioVisualizerHUDP
       dataArray = new Uint8Array(bufferLength);
     }
 
+    let isTabVisible = true;
+    const handleVisibilityChange = () => {
+      isTabVisible = !document.hidden;
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     const draw = () => {
+      if (!isTabVisible) {
+        animId = requestAnimationFrame(draw);
+        return;
+      }
+
       const currentAnalyser = getAnalyser();
       const w = canvas.width;
       const h = canvas.height;
 
       ctx.clearRect(0, 0, w, h);
 
-      // Render 5 visualizer bars
       const numBars = 5;
       const barWidth = 3;
       const barGap = 2;
       const startX = (w - (numBars * barWidth + (numBars - 1) * barGap)) / 2;
 
       if (isMuted || !currentAnalyser) {
-        // Draw flat quiet state line
+        // Quiet static state line (drawn once)
         ctx.fillStyle = "rgba(191, 161, 95, 0.25)";
         for (let i = 0; i < numBars; i++) {
           const x = startX + i * (barWidth + barGap);
           ctx.fillRect(x, h - 2, barWidth, 2);
         }
       } else {
-        // Get frequency data
         currentAnalyser.getByteFrequencyData(dataArray);
 
-        ctx.fillStyle = "#bfa15f"; // samurai-gold
+        ctx.fillStyle = "#bfa15f";
         for (let i = 0; i < numBars; i++) {
-          // Read from a subset of frequencies
           const freqValue = dataArray[i * 2] || 0;
-          // Scale value to canvas height
           const barHeight = Math.max(2, (freqValue / 255) * h);
           const x = startX + i * (barWidth + barGap);
           const y = h - barHeight;
@@ -63,12 +73,20 @@ export function AudioVisualizerHUD({ getAnalyser, isMuted }: AudioVisualizerHUDP
         }
       }
 
-      animId = requestAnimationFrame(draw);
+      // If muted, throttle draw loop to save main thread cycles
+      if (isMuted) {
+        setTimeout(() => {
+          animId = requestAnimationFrame(draw);
+        }, 200);
+      } else {
+        animId = requestAnimationFrame(draw);
+      }
     };
 
     draw();
 
     return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       cancelAnimationFrame(animId);
     };
   }, [getAnalyser, isMuted]);
@@ -82,4 +100,4 @@ export function AudioVisualizerHUD({ getAnalyser, isMuted }: AudioVisualizerHUDP
       style={{ width: "24px", height: "14px" }}
     />
   );
-}
+});

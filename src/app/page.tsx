@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Lenis from "lenis";
 import { CustomCursor } from "../components/samurai/CustomCursor";
@@ -44,16 +44,16 @@ export default function Home() {
     };
   }, []);
 
-  // End loading sequence after 2.2s
+  // End loading sequence after 1.8s
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 2200);
+    }, 1800);
     return () => clearTimeout(timer);
   }, []);
 
   // Handle anchor navigation with Lenis
-  const handleScrollTo = (id: string) => {
+  const handleScrollTo = useCallback((id: string) => {
     setMobileMenuOpen(false);
     const element = document.getElementById(id);
     const lenis = (window as any).lenisInstance;
@@ -62,7 +62,7 @@ export default function Home() {
     } else if (element) {
       element.scrollIntoView({ behavior: "smooth" });
     }
-  };
+  }, []);
 
   return (
     <main className="relative min-h-screen bg-sumi-black text-washi-light select-none overflow-x-hidden">
@@ -81,7 +81,7 @@ export default function Home() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: [0, 1, 1], scale: [0.8, 1.05, 1] }}
-                transition={{ duration: 1.8, times: [0, 0.4, 1] }}
+                transition={{ duration: 1.6, times: [0, 0.4, 1] }}
                 className="font-shippori text-6xl text-samurai-gold tracking-widest relative z-10"
               >
                 道
@@ -97,7 +97,7 @@ export default function Home() {
                   strokeLinecap="round"
                   initial={{ strokeDasharray: "0 260", rotate: -90 }}
                   animate={{ strokeDasharray: "250 260", rotate: 270 }}
-                  transition={{ duration: 1.8, ease: "easeInOut" }}
+                  transition={{ duration: 1.6, ease: "easeInOut" }}
                   style={{ originX: "50px", originY: "50px" }}
                 />
               </svg>
@@ -105,7 +105,7 @@ export default function Home() {
             <motion.span 
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.6 }}
-              transition={{ delay: 0.8, duration: 0.6 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
               className="mt-6 font-cinzel text-xs tracking-widest text-washi-parchment"
             >
               FORGING EXPERIENCES
@@ -119,13 +119,16 @@ export default function Home() {
         <KatanaScrollbar />
         <GlobalParticles />
         
-        <header className="fixed top-0 left-0 w-full z-40 bg-sumi-black/80 backdrop-blur-md border-b border-sumi-gray py-4 px-8 md:px-20 lg:px-32 flex items-center justify-between">
+        <header className="fixed top-0 left-0 w-full z-40 bg-sumi-black/80 backdrop-blur-md border-b border-sumi-gray py-4 px-6 sm:px-12 md:px-20 lg:px-32 flex items-center justify-between">
           <div 
             onClick={() => handleScrollTo("hero")}
             onMouseEnter={() => audio.playWoodStrike()}
             className="flex items-center gap-3 cursor-pointer select-none"
+            role="button"
+            tabIndex={0}
+            aria-label="Return to top hero section"
           >
-            <svg className="w-8 h-8 text-samurai-red hover:text-samurai-gold transition-colors duration-300" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg className="w-7 h-7 sm:w-8 sm:h-8 text-samurai-red hover:text-samurai-gold transition-colors duration-300" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
               <circle cx="50" cy="50" r="40" />
               <path d="M30 50 L70 50 M50 30 L50 70" />
               <circle cx="50" cy="50" r="16" />
@@ -139,47 +142,48 @@ export default function Home() {
             <button
               onClick={() => handleScrollTo("projects")}
               onMouseEnter={() => audio.playWoodStrike()}
-              className="hover:text-samurai-gold transition-colors duration-300 ink-underline pb-0.5"
+              className="hover:text-samurai-gold transition-colors duration-300 ink-underline pb-0.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-samurai-gold"
             >
               Selected Works
             </button>
             <button
               onClick={() => handleScrollTo("skills")}
               onMouseEnter={() => audio.playWoodStrike()}
-              className="hover:text-samurai-gold transition-colors duration-300 ink-underline pb-0.5"
+              className="hover:text-samurai-gold transition-colors duration-300 ink-underline pb-0.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-samurai-gold"
             >
               Mastery
             </button>
             <button
               onClick={() => handleScrollTo("about")}
               onMouseEnter={() => audio.playWoodStrike()}
-              className="hover:text-samurai-gold transition-colors duration-300 ink-underline pb-0.5"
+              className="hover:text-samurai-gold transition-colors duration-300 ink-underline pb-0.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-samurai-gold"
             >
               Philosophy
             </button>
             <button
               onClick={() => handleScrollTo("contact")}
               onMouseEnter={() => audio.playWoodStrike()}
-              className="hover:text-samurai-gold transition-colors duration-300 ink-underline pb-0.5"
+              className="hover:text-samurai-gold transition-colors duration-300 ink-underline pb-0.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-samurai-gold"
             >
               Contact
             </button>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-washi-light/10 bg-sumi-black/40">
               <AudioVisualizerHUD getAnalyser={audio.getAnalyser} isMuted={audio.isMuted} />
               <button
                 onClick={() => audio.toggleMute()}
                 onMouseEnter={() => audio.playWoodStrike()}
-                className={`p-1 rounded-full transition-all duration-300 ${
+                className={`min-h-[36px] min-w-[36px] p-1.5 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer ${
                   audio.isMuted 
                     ? "text-washi-light/40 hover:text-washi-light" 
                     : "text-samurai-gold hover:text-samurai-gold-bright"
                 }`}
                 title={audio.isMuted ? "Unmute Wind & Sounds" : "Mute Sound"}
+                aria-label={audio.isMuted ? "Unmute audio" : "Mute audio"}
               >
-                {audio.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                {audio.isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
               </button>
             </div>
 
@@ -188,7 +192,7 @@ export default function Home() {
                 audio.playWoodStrike();
                 setMobileMenuOpen(!mobileMenuOpen);
               }}
-              className="p-2 md:hidden text-washi-light hover:text-samurai-gold transition-colors"
+              className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center md:hidden text-washi-light hover:text-samurai-gold transition-colors cursor-pointer"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -207,28 +211,28 @@ export default function Home() {
               <button
                 onClick={() => handleScrollTo("projects")}
                 onMouseEnter={() => audio.playWoodStrike()}
-                className="py-2 text-washi-light hover:text-samurai-gold transition-colors"
+                className="py-3 text-washi-light hover:text-samurai-gold transition-colors min-h-[44px] flex items-center justify-center cursor-pointer"
               >
                 Selected Works
               </button>
               <button
                 onClick={() => handleScrollTo("skills")}
                 onMouseEnter={() => audio.playWoodStrike()}
-                className="py-2 text-washi-light hover:text-samurai-gold transition-colors"
+                className="py-3 text-washi-light hover:text-samurai-gold transition-colors min-h-[44px] flex items-center justify-center cursor-pointer"
               >
                 Mastery
               </button>
               <button
                 onClick={() => handleScrollTo("about")}
                 onMouseEnter={() => audio.playWoodStrike()}
-                className="py-2 text-washi-light hover:text-samurai-gold transition-colors"
+                className="py-3 text-washi-light hover:text-samurai-gold transition-colors min-h-[44px] flex items-center justify-center cursor-pointer"
               >
                 Philosophy
               </button>
               <button
                 onClick={() => handleScrollTo("contact")}
                 onMouseEnter={() => audio.playWoodStrike()}
-                className="py-2 text-washi-light hover:text-samurai-gold transition-colors"
+                className="py-3 text-washi-light hover:text-samurai-gold transition-colors min-h-[44px] flex items-center justify-center cursor-pointer"
               >
                 Contact
               </button>
@@ -249,7 +253,7 @@ export default function Home() {
         <About audio={audio} />
         <Contact audio={audio} />
 
-        <footer className="py-12 px-8 md:px-20 lg:px-32 bg-[#0a0a09] border-t border-sumi-gray select-none">
+        <footer className="py-12 px-6 sm:px-12 md:px-20 lg:px-32 bg-[#0a0a09] border-t border-sumi-gray select-none">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex flex-col items-center md:items-start gap-2">
               <svg className="w-10 h-8 text-samurai-red opacity-40" viewBox="0 0 100 80" fill="none" stroke="currentColor" strokeWidth="3">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, memo } from "react";
 
 interface Particle {
   x: number;
@@ -15,7 +15,7 @@ interface Particle {
   opacity: number;
 }
 
-export function GlobalParticles() {
+export const GlobalParticles = memo(function GlobalParticles() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -26,20 +26,22 @@ export function GlobalParticles() {
     if (!ctx) return;
 
     const particles: Particle[] = [];
-    const maxParticles = 40;
+    const isMobile = window.innerWidth < 768;
+    const maxParticles = isMobile ? 18 : 36; // Cap particles on mobile to save GPU cycles
 
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth * window.devicePixelRatio;
-      canvas.height = window.innerHeight * window.devicePixelRatio;
+      // Cap DPR to 1.25 to avoid extreme canvas scaling on retina/4k displays
+      const dpr = Math.min(1.25, window.devicePixelRatio || 1);
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
       canvas.style.width = `${window.innerWidth}px`;
       canvas.style.height = `${window.innerHeight}px`;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      ctx.scale(dpr, dpr);
     };
 
     resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("resize", resizeCanvas, { passive: true });
 
-    // Initial particles
     for (let i = 0; i < maxParticles; i++) {
       particles.push(createParticle(true));
     }
@@ -62,47 +64,51 @@ export function GlobalParticles() {
     }
 
     let animId: number;
+    let isVisible = true;
+
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const tick = () => {
+      if (!isVisible) {
+        animId = requestAnimationFrame(tick);
+        return;
+      }
+
       const w = window.innerWidth;
       const h = window.innerHeight;
 
       ctx.clearRect(0, 0, w, h);
 
-      // Read Lenis scroll velocity to affect particle motion
       const lenis = (window as any).lenisInstance;
       const scrollVelocity = lenis ? lenis.velocity || 0 : 0;
-      // Map scroll velocity to vertical speed multiplier and horizontal slant
       const velocityOffset = Math.min(6, Math.abs(scrollVelocity) * 0.08);
       const directionOffset = scrollVelocity * -0.015;
 
       particles.forEach((p, idx) => {
-        // Adjust motion based on velocity
         const curSpeedY = p.speedY + velocityOffset * (p.type === "sakura" ? 1.2 : 0.8);
         const curSpeedX = p.speedX + directionOffset;
 
         p.y += curSpeedY;
         p.x += curSpeedX;
-        p.angle += p.spin + (scrollVelocity * 0.002);
+        p.angle += p.spin + scrollVelocity * 0.002;
 
-        // Wrap around bounds
         if (p.y > h + 20 || p.x < -20 || p.x > w + 20) {
           particles[idx] = createParticle(false);
         }
 
-        // Draw particle
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(p.angle);
 
         if (p.type === "sakura") {
-          // Draw traditional cherry blossom petal shape
           ctx.beginPath();
           ctx.fillStyle = p.color;
           ctx.ellipse(0, 0, p.size, p.size * 0.6, 0, 0, Math.PI * 2);
           ctx.fill();
-          
-          // Little fold line in petal center
+
           ctx.beginPath();
           ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
           ctx.lineWidth = 0.5;
@@ -110,7 +116,6 @@ export function GlobalParticles() {
           ctx.lineTo(p.size, 0);
           ctx.stroke();
         } else {
-          // Draw sumi-e ink droplet (softer, rounder, fuzzy edges)
           ctx.beginPath();
           ctx.fillStyle = p.color;
           ctx.arc(0, 0, p.size, 0, Math.PI * 2);
@@ -127,6 +132,7 @@ export function GlobalParticles() {
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       cancelAnimationFrame(animId);
     };
   }, []);
@@ -138,4 +144,4 @@ export function GlobalParticles() {
       style={{ mixBlendMode: "screen" }}
     />
   );
-}
+});

@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 export function useSamuraiAudio() {
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const windNoiseNodeRef = useRef<AudioWorkletNode | ScriptProcessorNode | null>(null);
   const windFilterRef = useRef<BiquadFilterNode | null>(null);
   const windGainRef = useRef<GainNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -12,7 +11,7 @@ export function useSamuraiAudio() {
   const [isMuted, setIsMuted] = useState(true);
 
   // Initialize Web Audio context
-  const initAudio = () => {
+  const initAudio = useCallback(() => {
     if (audioCtxRef.current) return;
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContextClass) return;
@@ -20,13 +19,11 @@ export function useSamuraiAudio() {
     const ctx = new AudioContextClass();
     audioCtxRef.current = ctx;
 
-    // Create Wind Sound (Pink noise approximate using ScriptProcessor for maximum compatibility)
-    // ScriptProcessor is deprecated but widely supported in all browsers for procedural noise
     const bufferSize = 2 * ctx.sampleRate;
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
     
-    // Generate pinkish noise
+    // Generate pinkish noise for wind
     let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
     for (let i = 0; i < bufferSize; i++) {
       const white = Math.random() * 2 - 1;
@@ -37,7 +34,7 @@ export function useSamuraiAudio() {
       b4 = 0.55000 * b4 + white * 0.5329522;
       b5 = -0.7616 * b5 - white * 0.0168980;
       output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-      output[i] *= 0.11; // scale down
+      output[i] *= 0.11;
       b6 = white * 0.115926;
     }
 
@@ -45,21 +42,18 @@ export function useSamuraiAudio() {
     noiseSource.buffer = noiseBuffer;
     noiseSource.loop = true;
 
-    // Wind filter (lowpass filter to simulate blowing)
     const filter = ctx.createBiquadFilter();
     filter.type = "bandpass";
     filter.Q.setValueAtTime(3.0, ctx.currentTime);
     filter.frequency.setValueAtTime(350, ctx.currentTime);
     windFilterRef.current = filter;
 
-    // Wind Gain node
     const gainNode = ctx.createGain();
     gainNode.gain.setValueAtTime(0.0, ctx.currentTime);
     windGainRef.current = gainNode;
 
-    // Analyser node for the HUD visualizer
     const analyser = ctx.createAnalyser();
-    analyser.fftSize = 32; // small size for high performance visualizer bars
+    analyser.fftSize = 32;
     analyserRef.current = analyser;
 
     noiseSource.connect(filter);
@@ -69,13 +63,12 @@ export function useSamuraiAudio() {
 
     noiseSource.start(0);
 
-    // Modulate wind frequency randomly to simulate gusty wind
     const modulateWind = () => {
       if (!audioCtxRef.current || isMuted) return;
       const now = ctx.currentTime;
       const targetFreq = 200 + Math.random() * 500;
       const targetQ = 1.0 + Math.random() * 4.0;
-      const speed = 2.0 + Math.random() * 3.0; // seconds to change
+      const speed = 2.0 + Math.random() * 3.0;
 
       filter.frequency.exponentialRampToValueAtTime(targetFreq, now + speed);
       filter.Q.exponentialRampToValueAtTime(targetQ, now + speed);
@@ -87,9 +80,9 @@ export function useSamuraiAudio() {
     if (!isMuted) {
       gainNode.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 3);
     }
-  };
+  }, [isMuted]);
 
-  const toggleMute = () => {
+  const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
       const nextMuted = !prev;
       
@@ -109,23 +102,18 @@ export function useSamuraiAudio() {
       }
       return nextMuted;
     });
-  };
+  }, [initAudio]);
 
-  // Play Koto String Pluck sound
-  const playKoto = (noteIndex = 0) => {
+  const playKoto = useCallback((noteIndex = 0) => {
     if (isMuted || !audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
     if (ctx.state === "suspended") ctx.resume();
 
-    // Traditional Hirajoshi pentatonic scale (A minor-ish)
-    // A4, B4, C5, E5, F5, A5
     const scale = [440.00, 493.88, 523.25, 659.25, 698.46, 880.00];
     const freq = scale[noteIndex % scale.length];
 
     try {
       const now = ctx.currentTime;
-      
-      // Koto pluck has a sharp attack and rich harmonic content, modeled with twin oscillators (triangle + sine)
       const osc1 = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
       const filter = ctx.createBiquadFilter();
@@ -135,17 +123,15 @@ export function useSamuraiAudio() {
       osc1.frequency.setValueAtTime(freq, now);
       
       osc2.type = "sine";
-      // detune slightly for string thickness
       osc2.frequency.setValueAtTime(freq * 2.002, now);
 
       filter.type = "lowpass";
       filter.frequency.setValueAtTime(freq * 4, now);
-      // Sweep filter down quickly for string pluck dampening
       filter.frequency.exponentialRampToValueAtTime(freq * 0.8, now + 0.8);
 
       gainNode.gain.setValueAtTime(0.0, now);
-      gainNode.gain.linearRampToValueAtTime(0.25, now + 0.005); // sharp attack
-      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 1.2); // long decay
+      gainNode.gain.linearRampToValueAtTime(0.25, now + 0.005);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
 
       osc1.connect(filter);
       osc2.connect(filter);
@@ -160,10 +146,9 @@ export function useSamuraiAudio() {
     } catch (e) {
       console.warn("Koto play failed:", e);
     }
-  };
+  }, [isMuted]);
 
-  // Play Hyoshigi Wood Block Strike sound (used on button hovers/clicks)
-  const playWoodStrike = () => {
+  const playWoodStrike = useCallback(() => {
     if (isMuted || !audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
     if (ctx.state === "suspended") ctx.resume();
@@ -195,10 +180,9 @@ export function useSamuraiAudio() {
     } catch (e) {
       console.warn("Wood block strike failed:", e);
     }
-  };
+  }, [isMuted]);
 
-  // Play Katana Sword Slice sound (used on main actions or section transitions)
-  const playSwordSlice = () => {
+  const playSwordSlice = useCallback(() => {
     if (isMuted || !audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
     if (ctx.state === "suspended") ctx.resume();
@@ -207,7 +191,6 @@ export function useSamuraiAudio() {
       const now = ctx.currentTime;
       const duration = 0.25;
 
-      // Generate a tiny burst of white noise for the air friction/slash
       const bufferSize = ctx.sampleRate * duration;
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
@@ -221,7 +204,6 @@ export function useSamuraiAudio() {
       const filter = ctx.createBiquadFilter();
       filter.type = "bandpass";
       filter.frequency.setValueAtTime(2000, now);
-      // Sweeping frequency upwards and then down rapidly
       filter.frequency.exponentialRampToValueAtTime(6000, now + duration * 0.4);
       filter.frequency.exponentialRampToValueAtTime(800, now + duration);
       filter.Q.setValueAtTime(4.0, now);
@@ -240,9 +222,11 @@ export function useSamuraiAudio() {
     } catch (e) {
       console.warn("Sword slice failed:", e);
     }
-  };
+  }, [isMuted]);
 
-  // Clean up
+  const getAnalyser = useCallback(() => analyserRef.current, []);
+
+  // Clean up on unmount
   useEffect(() => {
     return () => {
       if (audioCtxRef.current) {
@@ -260,6 +244,6 @@ export function useSamuraiAudio() {
     playKoto,
     playWoodStrike,
     playSwordSlice,
-    getAnalyser: () => analyserRef.current
+    getAnalyser
   };
 }
