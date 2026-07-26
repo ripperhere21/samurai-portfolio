@@ -17,8 +17,10 @@ export function DevOverlayErrorShield() {
         msg.includes("hydration-mismatch") ||
         msg.includes("translate-tooltip") ||
         msg.includes("translate") ||
+        msg.includes("hidden_translate") ||
         msg.includes("MetaMask") ||
-        msg.includes("React Hydration");
+        msg.includes("React Hydration") ||
+        msg.includes("didn't match");
 
       if (isMutedMessage) {
         console.warn("🛡️ Muted hydration/extension console error to prevent Next.js dev overlay popup:", msg);
@@ -39,7 +41,9 @@ export function DevOverlayErrorShield() {
         filename.includes("inpage.js") ||
         message.includes("MetaMask") ||
         message.includes("translate") ||
+        message.includes("hidden_translate") ||
         message.includes("Hydration failed") ||
+        message.includes("didn't match") ||
         stack.includes("chrome-extension://");
 
       if (isExtensionError) {
@@ -58,6 +62,7 @@ export function DevOverlayErrorShield() {
       const isExtensionError =
         message.includes("MetaMask") ||
         message.includes("translate") ||
+        message.includes("hidden_translate") ||
         stack.includes("chrome-extension://");
 
       if (isExtensionError) {
@@ -71,7 +76,6 @@ export function DevOverlayErrorShield() {
     window.addEventListener("unhandledrejection", handleRejection, true);
 
     return () => {
-      // Restore console.error and remove listeners
       console.error = originalConsoleError;
       window.removeEventListener("error", handleError, true);
       window.removeEventListener("unhandledrejection", handleRejection, true);
@@ -80,3 +84,4 @@ export function DevOverlayErrorShield() {
 
   return null;
 }
+

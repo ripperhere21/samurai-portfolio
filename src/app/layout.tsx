@@ -22,8 +22,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth notranslate" suppressHydrationWarning>
+    <html lang="en" className="scroll-smooth notranslate" translate="no" suppressHydrationWarning>
       <head>
+        <meta name="google" content="notranslate" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link 
@@ -31,7 +32,7 @@ export default function RootLayout({
           rel="stylesheet" 
         />
       </head>
-      <body className="bg-sumi-black text-washi-light antialiased min-h-screen notranslate" suppressHydrationWarning>
+      <body className="bg-sumi-black text-washi-light antialiased min-h-screen notranslate" translate="no" suppressHydrationWarning>
         <ThemeProvider>
           {/* Dev Overlay Error Shield for third-party extensions */}
           <DevOverlayErrorShield />
@@ -39,7 +40,9 @@ export default function RootLayout({
           <div className="washi-paper-overlay" />
           {/* Cinematic shading vignette */}
           <div className="cinematic-vignette" />
-          {children}
+          <div className="notranslate" translate="no" suppressHydrationWarning>
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>

@@ -259,8 +259,8 @@ export default function Home() {
                 工芸 // 武士道
               </span>
             </div>
-            <p className="font-sans text-[11px] text-washi-light/35 tracking-widest text-center md:text-right">
-              © {new Date().getFullYear()} THE WAY OF CRAFT. ALL RIGHTS RESERVED. FORGED WITH HONOUR.
+            <p className="font-sans text-[11px] text-washi-light/35 tracking-widest text-center md:text-right" suppressHydrationWarning>
+              © 2026 THE WAY OF CRAFT. ALL RIGHTS RESERVED. FORGED WITH HONOUR.
             </p>
           </div>
         </footer>
