@@ -172,23 +172,40 @@ export function CinematicHero({ onScrollToProjects, onScrollToContact, audio }: 
       c.closePath();
     };
 
-    // Helper to draw image aligned to the right, scaling to match height
+    // Helper to draw image aligned to the right on desktop/tablet, or scaled & centered on mobile
     const drawImageRightAligned = (c: CanvasRenderingContext2D, img: HTMLImageElement, w: number, h: number, parallaxX: number, parallaxY: number) => {
       const imgW = img.naturalWidth || img.width;
       const imgH = img.naturalHeight || img.height;
-      const r = h / imgH; // Scale to match height
-      const nw = imgW * r;
-      const nh = h;
-      
-      // Right-aligned coordinates: cx is w - nw to align right
-      const cx = w - nw;
-      const cy = 0;
+      const isMobile = (window.innerWidth || 0) < 768;
 
-      // Apply subtle mouse parallax to the background image
-      const px = cx + parallaxX * -15;
-      const py = cy + parallaxY * -15;
+      if (!isMobile) {
+        // Desktop & Tablet (>= 768px): Keep exact existing right-aligned behavior
+        const r = h / imgH; // Scale to match height
+        const nw = imgW * r;
+        const nh = h;
+        
+        // Right-aligned coordinates: cx is w - nw to align right
+        const cx = w - nw;
+        const cy = 0;
 
-      c.drawImage(img, px, py, nw, nh);
+        // Apply subtle mouse parallax to the background image
+        const px = cx + parallaxX * -15;
+        const py = cy + parallaxY * -15;
+
+        c.drawImage(img, px, py, nw, nh);
+      } else {
+        // Mobile (< 768px): Fit full frame width so entire animation is 100% visible without cropping
+        const r = w / imgW; // Fit width to mobile screen
+        const nw = w;
+        const nh = imgH * r;
+        const cx = 0;
+        // Position vertically centered in the lower mobile hero spacer area
+        const cy = Math.max(0, h * 0.5 + ((h * 0.5) - nh) / 2);
+        const px = cx;
+        const py = cy + parallaxY * -8;
+
+        c.drawImage(img, px, py, nw, nh);
+      }
     };
 
     const frameIndexRef = { current: 0 }; // Start playhead from the first frame
