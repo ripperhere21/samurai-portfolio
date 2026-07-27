@@ -172,7 +172,7 @@ export function CinematicHero({ onScrollToProjects, onScrollToContact, audio }: 
       c.closePath();
     };
 
-    // Helper to draw image aligned to the right on desktop/tablet, or scaled & centered on mobile
+    // Helper to draw image aligned to the right on desktop/tablet, or focal-framed full-height background on mobile
     const drawImageRightAligned = (c: CanvasRenderingContext2D, img: HTMLImageElement, w: number, h: number, parallaxX: number, parallaxY: number) => {
       const imgW = img.naturalWidth || img.width;
       const imgH = img.naturalHeight || img.height;
@@ -194,15 +194,15 @@ export function CinematicHero({ onScrollToProjects, onScrollToContact, audio }: 
 
         c.drawImage(img, px, py, nw, nh);
       } else {
-        // Mobile (< 768px): Fit full frame width so entire animation is 100% visible without cropping
-        const r = w / imgW; // Fit width to mobile screen
-        const nw = w;
-        const nh = imgH * r;
-        const cx = 0;
-        // Position vertically centered in the lower mobile hero spacer area
-        const cy = Math.max(0, h * 0.5 + ((h * 0.5) - nh) / 2);
-        const px = cx;
-        const py = cy + parallaxY * -8;
+        // Mobile (< 768px): Full-height background (cy = 0) with focal alignment for red sun & samurai behind text
+        const r = h / imgH; // Scale to match height so animation spans top-to-bottom
+        const nw = imgW * r;
+        const nh = h;
+        // Focal alignment (0.58) perfectly frames red sun & samurai in mobile background behind text
+        const cx = (w - nw) * 0.58;
+        const cy = 0;
+        const px = cx + parallaxX * -6;
+        const py = cy + parallaxY * -6;
 
         c.drawImage(img, px, py, nw, nh);
       }
